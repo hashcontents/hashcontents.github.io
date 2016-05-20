@@ -1,0 +1,53 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <script>
+        function replaceRec(nodes) {
+            if (nodes.length == 0) {
+                return;
+            }
+
+            var node = nodes.shift();
+            if (node.innerHTML) {
+                eval(node.innerHTML);
+                return replaceRec(nodes);
+            } else {
+                var script  = document.createElement('script');
+
+                for (var i = node.attributes.length-1; i >= 0; i--) {
+                    script.setAttribute(node.attributes[i].name,
+                        node.attributes[i].value);
+                }
+
+                script.addEventListener('load', function () {
+                    replaceRec(nodes);
+                })
+                node.parentNode.replaceChild(script, node);
+            }
+        }
+
+        function nodeScriptReplace(node) {
+            var scripts = document.querySelectorAll('body script');
+            var nodes = [];
+            for (var i in scripts) {
+                if (scripts.hasOwnProperty(i)) {
+                    nodes.push(scripts[i]);
+                }
+            }
+            replaceRec(nodes);
+        }
+
+        window.addEventListener('DOMContentLoaded', function () {
+            var container = document.querySelector('#container');
+            var contents = location.hash.substring(1);
+            //location.hash = '';
+            container.innerHTML = decodeURIComponent(contents);
+            nodeScriptReplace(container);
+        });
+        </script>
+    </head>
+    <body>
+        <div id="container">
+        </div>
+    </body>
+</html>
